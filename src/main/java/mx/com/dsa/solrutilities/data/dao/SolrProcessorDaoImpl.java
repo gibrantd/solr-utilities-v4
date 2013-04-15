@@ -3,10 +3,9 @@ package mx.com.dsa.solrutilities.data.dao;
 
 import java.util.List;
 import java.util.Map;
-import javax.xml.ws.Response;
-import mx.com.dsa.solrutilities.data.model.SolrQueryResult;
 import mx.com.dsa.solrutilities.data.model.SimpleFacet;
-import mx.com.dsa.solrutilities.data.parser.DocumentsParser;
+import mx.com.dsa.solrutilities.data.model.SimpleStatistic;
+import mx.com.dsa.solrutilities.data.model.SolrQueryResult;
 import mx.com.dsa.solrutilities.data.parser.FacetsParser;
 import mx.com.dsa.solrutilities.data.parser.SimpleFacetsParser;
 import mx.com.dsa.solrutilities.data.parser.SimpleStatisticsParser;
@@ -24,13 +23,13 @@ import org.slf4j.LoggerFactory;
 public class SolrProcessorDaoImpl implements SolrProcessorDao {
               
     protected SolrQueryManager solrQueryManager;
-    protected DocumentsParser documentsParser;
+    protected Class documentsParser;
     protected FacetsParser facetsParser = new SimpleFacetsParser();    
     protected StatisticsParser statisticsParser = new SimpleStatisticsParser();   
     
     private static Logger logger = LoggerFactory.getLogger(SolrProcessorDaoImpl.class);
 
-    public void setDocumentsParser(DocumentsParser documentsParser) {        
+    public void setDocumentsParser(Class documentsParser) {        
         this.documentsParser = documentsParser;
     }
 
@@ -60,17 +59,7 @@ public class SolrProcessorDaoImpl implements SolrProcessorDao {
         return processResult(queryResponse);
     }        
     
-    @Override
-    public SolrQueryResult processQuery(SolrQuery queryRequest, DocumentsParser documentsParser) {
-        QueryResponse queryResponse = solrQueryManager.executeQuery(queryRequest);
-        return processResult(queryResponse, documentsParser);
-    }
-    
-    @Override
-    public SolrQueryResult processQuery(SolrQuery queryRequest, List<String> facets, List<String> filters, DocumentsParser documentsParser) {
-        QueryResponse queryResponse = solrQueryManager.executeQuery(queryRequest, facets, filters);
-        return processResult(queryResponse, documentsParser);
-    }    
+   
     
     
     public SolrQueryResult processQuery(SolrQuery queryRequest, Class beanClass) {
@@ -79,25 +68,18 @@ public class SolrProcessorDaoImpl implements SolrProcessorDao {
     }
     
     protected SolrQueryResult processResult(QueryResponse response) {        
-        List parsedDocuments = documentsParser == null ? null : documentsParser.parse(response);
+        List parsedDocuments = documentsParser == null ? null : response.getBeans(documentsParser);
         Map<String,SimpleFacet> parsedFacets=facetsParser.parse(response);                 
-        Map<String,Map<String,Double>> parsedStatistics = statisticsParser.parse(response);  
+        Map<String,SimpleStatistic> parsedStatistics = statisticsParser.parse(response);  
         long documentsFound = response.getResults().getNumFound();        
         return new SolrQueryResult(documentsFound, parsedDocuments, parsedFacets,parsedStatistics);
     }
     
-    protected SolrQueryResult processResult(QueryResponse response, DocumentsParser documentsParser) {
-        List parsedDocuments = documentsParser.parse(response);
-         Map<String,SimpleFacet> parsedFacets=facetsParser.parse(response);
-        Map<String,Map<String,Double>> parsedStatistics = statisticsParser.parse(response);  
-        long documentsFound = response.getResults().getNumFound();
-        return new SolrQueryResult(documentsFound, parsedDocuments, parsedFacets,parsedStatistics);
-    }
 
    protected SolrQueryResult processResult(QueryResponse response, Class beanClass){
         List parsedDocuments = response.getBeans(beanClass);
          Map<String,SimpleFacet> parsedFacets=facetsParser.parse(response);
-        Map<String,Map<String,Double>> parsedStatistics = statisticsParser.parse(response); 
+        Map<String,SimpleStatistic> parsedStatistics = statisticsParser.parse(response); 
         long documentsFound = response.getResults().getNumFound();
         return new SolrQueryResult(documentsFound, parsedDocuments, parsedFacets,parsedStatistics);
     }
