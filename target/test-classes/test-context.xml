@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util" 
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+
+    <!-- Annotations -->
+ 
+  
+   
+    <context:annotation-config/>    
+    <context:component-scan base-package="mx.com.dsa.solrutilities"/>
+    
+ 
+       <bean id="systemProps" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    	   <property name="targetObject" value="#{@systemProperties}" />
+    	   <property name="targetMethod" value="putAll" />
+    	   <property name="arguments">
+              <util:properties>
+                 <prop key="javax.net.ssl.trustStore">/Users/gibran/Programas/solr-4.2.0/example_sec/etc/keystore/keystoreDSA</prop>
+                 <prop key="javax.net.ssl.trustStorePassword">ex1t0s0</prop>
+              </util:properties>
+   	   </property>
+	</bean>
+    
+    
+    
+    
+     
+     
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject">
+           <ref local="httpClient"/>
+        </property>
+        <property name="targetMethod">
+            <value>addRequestInterceptor</value>
+        </property>
+        <property name="arguments">
+        <list>
+            <ref bean="emp"/>          
+        </list>
+    </property>
+   </bean>
+     
+  
+     
+     <bean id="httpClient" class="org.apache.http.impl.client.DefaultHttpClient"/>
+
+     
+     
+     <bean id="emp" class="mx.com.dsa.solrutilities.util.PreEmptiveBasicAuthenticator"> 
+        <constructor-arg>
+            <value>administrator</value>            
+        </constructor-arg>
+        <constructor-arg>
+            <value>Ex1t0s0+G4n4d0r</value>
+        </constructor-arg>       
+    </bean> 
+     
+     
+      <bean id="server" class="org.apache.solr.client.solrj.impl.HttpSolrServer"> 
+        <constructor-arg>
+            <value>https://localhost:7974/solr/</value>            
+        </constructor-arg>
+        <constructor-arg>
+             <ref bean="httpClient"/> 
+        </constructor-arg>       
+    </bean> 
+     
+     
+
+   
+    <bean id="solrQueryManager" class="mx.com.dsa.solrutilities.data.dao.SolrQueryManagerImpl">    
+       <property name="server">
+            <ref bean="server"/> 
+       </property>    
+    </bean>  
+    
+  
+   <bean id="solrProcessor" class="mx.com.dsa.solrutilities.data.dao.SolrProcessorDaoImpl">    
+       <property name="solrQueryManager">
+            <ref bean="solrQueryManager"/> 
+       </property>    
+    </bean>
+    
+  
+</beans>
