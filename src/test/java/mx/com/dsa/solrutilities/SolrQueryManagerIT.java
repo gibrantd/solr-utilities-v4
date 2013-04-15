@@ -111,13 +111,7 @@ public class SolrQueryManagerIT {
 //        SolrQueryResult res=  solrProcessor.processQuery(query);
 //        System.out.println(res.getTotalDocumentsFound());
 //        
-//        
-//        SimpleDocumentDtoParser simpleDocument = new SimpleDocumentDtoParser();                 
-//        res=  solrProcessor.processQuery(query,simpleDocument);
-//        System.out.println(res.getTotalDocumentsFound());
-//        System.out.println(res.getDocuments().size());
-        
-        
+//       
         
         SolrQueryResult res= solrProcessor.processQuery(query,Bean.class);
         System.out.println(res.getTotalDocumentsFound());
